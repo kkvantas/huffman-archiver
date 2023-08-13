@@ -74,22 +74,32 @@ def calc_to_bin(i):
 
 
 
-def decoding(node):
+def decoding(node, ext):
     with open('output.uwu', 'rb') as output:
         with open('final.txt', 'w') as final:
-            byte = output.read(1)
-            print(byte)
-            for i in output:
-                i = int.from_bytes(i, byteorder='big')
-                i = calc_to_bin(i)
-                for num in i:
-                    letter, freq = node.data
-                    if type(letter) == str:
-                        final.write(letter)
-                    elif num == 1:
-                        node = node.right
-                    elif num == 0:
-                        node = node.left
+            byte = output.read()
+            sum = ''
+            for i in byte:
+                if i == byte[-1]:
+                    i = calc_to_bin(i)
+                    i = i[:-ext]
+                else:
+                    i = calc_to_bin(i)
+                sum += i
+            orig_node = node
+            for num in sum:
+                if num == '1':
+                    node = node.right
+                    if node.data[0]:
+                        final.write(node.data[0])
+                        node = orig_node
+                elif num == '0':
+                    node = node.left
+                    if node.data[0]:
+                        final.write(node.data[0])
+                        node = orig_node
+
+
 
 
 
@@ -118,7 +128,7 @@ if __name__ == "__main__":
     output, ext = encoding_to_file(text, d1)
 
 
-    decoding(node)
+    decoding(node, ext)
 
 
 
