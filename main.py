@@ -1,4 +1,5 @@
 from collections import Counter
+import io
 
 
 class Node:
@@ -33,18 +34,11 @@ def huffman_code_tree_stack(n, d):
         if l:
             stack.append((l, code + '0'))
 
-def encoding(text, d):
-    code = ''
-    for i in text:
-        code = code + d[i]
-    ext = 8 - len(code) % 8
-    code = code + ext * '0'
-    return ''.join(chr(int(x, 2)) for x in map(''.join, zip(*[iter(code)] * 8)))
-
 
 def encoding_to_file(text, d):
     with open('output.uwu', 'wb') as output:
         byte = ''
+        ext = None
         for i in text:
             if len(byte + d[i]) < 8:
                 byte = byte + d[i]
@@ -53,53 +47,55 @@ def encoding_to_file(text, d):
                     byte = byte + ext * '0'
                     output.write(int(byte, 2).to_bytes(1, byteorder='big'))
             elif len(byte + d[i]) > 8:
+                tail = (byte + d[i])[8:]
                 byte = (byte + d[i])[:8]
-                tail = (byte + d[i])[9:]
                 output.write(int(byte, 2).to_bytes(1, byteorder='big'))
                 byte = tail
             elif len(byte + d[i]) == 8:
                 byte = byte + d[i]
                 output.write(int(byte, 2).to_bytes(1, byteorder='big'))
+                byte = ''
     return output, ext
 
 
-def calc_to_bin(i):
+def convert_to_bin_str(i):
     n = 8
-    strin = ''
+    string = ''
     while n:
-        strin = str(i & 0b00000001) + strin
+        string = str(i & 0b00000001) + string
         i = i >> 1
         n -= 1
-    return strin
-
+    return string
 
 
 def decoding(node, ext):
     with open('output.uwu', 'rb') as output:
         with open('final.txt', 'w') as final:
-            byte = output.read()
-            sum = ''
-            for i in byte:
-                if i == byte[-1]:
-                    i = calc_to_bin(i)
-                    i = i[:-ext]
-                else:
-                    i = calc_to_bin(i)
-                sum += i
+            output.seek(0, io.SEEK_END)
+            length = output.tell()
+            output.seek(0, io.SEEK_SET)
+            string = ''
             orig_node = node
-            for num in sum:
-                if num == '1':
-                    node = node.right
+            for i in range(1, length+1):
+                byte = output.read(1)
+                byte = int.from_bytes(byte, "big")
+                string += convert_to_bin_str(byte)
+                if i == length:
+                    string = string[:-ext]
+                node = orig_node
+                count = 0
+                for num in string:
+                    if num == '1':
+                        node = node.right
+                    elif num == '0':
+                        node = node.left
                     if node.data[0]:
                         final.write(node.data[0])
                         node = orig_node
-                elif num == '0':
-                    node = node.left
-                    if node.data[0]:
-                        final.write(node.data[0])
-                        node = orig_node
+                        leftover = string[(count+1):]
 
-
+                    count += 1
+                string = leftover
 
 
 
@@ -115,18 +111,19 @@ if __name__ == "__main__":
     for i in frequency:
         nodes.append(Node(i))
 
-        while len(nodes) > 1:
-            nodes.append(Node((None, nodes[0].data[1] + nodes[1].data[1]), nodes[0], nodes[1]))
-            del nodes[:2]
-            nodes = sorted(nodes, key=lambda freq: freq.data[1])
+    while len(nodes) > 1:
+        nodes.append(Node((None, nodes[0].data[1] + nodes[1].data[1]), nodes[0], nodes[1]))
+        del nodes[:2]
+        nodes = sorted(nodes, key=lambda x: x.data[1])
 
     node = nodes[0]
 
     d1 = dict()
-    huffman_code_tree_recursive(node, d1)
+    huffman_code_tree_stack(node, d1)
+
+    print(d1)
 
     output, ext = encoding_to_file(text, d1)
-
 
     decoding(node, ext)
 
