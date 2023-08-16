@@ -37,12 +37,14 @@ def huffman_code_tree_stack(n, d):
 
 def encoding_to_file(text, d):
     with open('output.uwu', 'wb') as output:
+        length = len(text)
         byte = ''
-        ext = None
+        ext = 0
+        count = 1
         for i in text:
             if len(byte + d[i]) < 8:
                 byte = byte + d[i]
-                if i == text[-1]:
+                if count == length:
                     ext = 8 - len(byte)
                     byte = byte + ext * '0'
                     output.write(int(byte, 2).to_bytes(1, byteorder='big'))
@@ -55,6 +57,7 @@ def encoding_to_file(text, d):
                 byte = byte + d[i]
                 output.write(int(byte, 2).to_bytes(1, byteorder='big'))
                 byte = ''
+            count += 1
     return output, ext
 
 
@@ -85,6 +88,7 @@ def decoding(node, ext):
                 node = orig_node
                 count = 0
                 for num in string:
+                    leftover = ''
                     if num == '1':
                         node = node.right
                     elif num == '0':
