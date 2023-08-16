@@ -73,7 +73,7 @@ def convert_to_bin_str(i):
 
 def decoding(node, ext):
     with open('output.uwu', 'rb') as output:
-        with open('final.txt', 'w') as final:
+        with open('final.txt', 'w', encoding='utf8') as final:
             output.seek(0, io.SEEK_END)
             length = output.tell()
             output.seek(0, io.SEEK_SET)
@@ -85,10 +85,10 @@ def decoding(node, ext):
                 string += convert_to_bin_str(byte)
                 if i == length:
                     string = string[:-ext]
-                node = orig_node
                 count = 0
+                node = orig_node
+                leftover = string
                 for num in string:
-                    leftover = ''
                     if num == '1':
                         node = node.right
                     elif num == '0':
@@ -105,7 +105,7 @@ def decoding(node, ext):
 
 
 if __name__ == "__main__":
-    with open('text.txt', 'r', encoding='utf-8') as file:
+    with open('boss.txt', 'r', encoding='utf-8') as file:
         text = file.read()
 
     frequency = Counter(text).most_common()[::-1]
