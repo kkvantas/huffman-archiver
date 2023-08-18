@@ -12,11 +12,14 @@ class Node:
         return self.left, self.right
 
 
-def build_tree(nodes=list):
+def build_tree(nodes):
+    nodes = sorted(nodes, key=lambda x: x.data[1])
     while len(nodes) > 1:
         nodes.append(Node((None, nodes[0].data[1] + nodes[1].data[1]), nodes[0], nodes[1]))
         del nodes[:2]
         nodes = sorted(nodes, key=lambda x: x.data[1])
+    return nodes[0]
+
 
 def huffman_code_tree_recursive(n, d, st=''):
     if n:
@@ -27,8 +30,9 @@ def huffman_code_tree_recursive(n, d, st=''):
         huffman_code_tree_recursive(r, d, st + '1')
 
 
-def huffman_code_tree_stack(n, d):
-    stack = [(n, '')]
+def huffman_code_tree_stack(root):
+    stack = [(root, '')]
+    d = dict()
     while len(stack):
         node, code = stack.pop()
         char, freq = node.data
@@ -39,6 +43,7 @@ def huffman_code_tree_stack(n, d):
             stack.append((r, code + '1'))
         if l:
             stack.append((l, code + '0'))
+    return d
 
 
 def get_length(file):
@@ -111,7 +116,6 @@ def decoding(root, ext):
         with open('final.txt', 'w', encoding='utf8') as final:
             length = get_length(output)
             string = ''
-            #root = node
             for i in range(1, length+1):
                 byte = output.read(1)
                 byte = int.from_bytes(byte, "big")
@@ -134,18 +138,15 @@ if __name__ == "__main__":
     for i in frequency:
         nodes.append(Node(i))
 
-    build_tree(nodes)
+    root = build_tree(nodes)
 
-    node = nodes[0]
+    dict_with_code = huffman_code_tree_stack(root)
 
-    d1 = dict()
-    huffman_code_tree_stack(node, d1)
+    print(dict_with_code)
 
-    print(d1)
+    output, ext = encoding_to_file(text, dict_with_code)
 
-    output, ext = encoding_to_file(text, d1)
-
-    decoding(node, ext)
+    decoding(root, ext)
 
 
 
