@@ -12,6 +12,12 @@ class Node:
         return self.left, self.right
 
 
+def build_tree(nodes=list):
+    while len(nodes) > 1:
+        nodes.append(Node((None, nodes[0].data[1] + nodes[1].data[1]), nodes[0], nodes[1]))
+        del nodes[:2]
+        nodes = sorted(nodes, key=lambda x: x.data[1])
+
 def huffman_code_tree_recursive(n, d, st=''):
     if n:
         if type(n.data[0]) is str:
@@ -43,6 +49,8 @@ def get_length(file):
 
 
 def convert_to_bin_str(i):
+    if i not in range(0, 256):
+        raise ValueError
     n = 8
     string = ''
     while n:
@@ -52,11 +60,11 @@ def convert_to_bin_str(i):
     return string
 
 
-def find_letter(root, code_string):
+def decode_code_string(root, code_string):
     count = 0
     node = root
     leftover = code_string
-    letter = ''
+    letters = ''
     for num in code_string:
         if node:
             if num == '1':
@@ -65,11 +73,11 @@ def find_letter(root, code_string):
                 node = node.left
             if node:
                 if node.data[0]:
-                    letter += node.data[0]
+                    letters += node.data[0]
                     leftover = code_string[(count + 1):]
                     node = root
             count += 1
-    return leftover, letter
+    return leftover, letters
 
 
 def encoding_to_file(text, d):
@@ -98,21 +106,21 @@ def encoding_to_file(text, d):
     return output, ext
 
 
-def decoding(node, ext):
+def decoding(root, ext):
     with open('output.uwu', 'rb') as output:
         with open('final.txt', 'w', encoding='utf8') as final:
             length = get_length(output)
             string = ''
-            root = node
+            #root = node
             for i in range(1, length+1):
                 byte = output.read(1)
                 byte = int.from_bytes(byte, "big")
                 string += convert_to_bin_str(byte)
                 if i == length:
                     string = string[:-ext]
-                string, letter = find_letter(root, string)
-                if len(letter):
-                    final.write(letter)
+                string, letters = decode_code_string(root, string)
+                if len(letters):
+                    final.write(letters)
 
 
 if __name__ == "__main__":
@@ -126,10 +134,7 @@ if __name__ == "__main__":
     for i in frequency:
         nodes.append(Node(i))
 
-    while len(nodes) > 1:
-        nodes.append(Node((None, nodes[0].data[1] + nodes[1].data[1]), nodes[0], nodes[1]))
-        del nodes[:2]
-        nodes = sorted(nodes, key=lambda x: x.data[1])
+    build_tree(nodes)
 
     node = nodes[0]
 
