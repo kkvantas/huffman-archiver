@@ -35,9 +35,46 @@ def huffman_code_tree_stack(n, d):
             stack.append((l, code + '0'))
 
 
+def get_length(file):
+    file.seek(0, io.SEEK_END)
+    length = file.tell()
+    file.seek(0, io.SEEK_SET)
+    return length
+
+
+def convert_to_bin_str(i):
+    n = 8
+    string = ''
+    while n:
+        string = str(i & 0b00000001) + string
+        i = i >> 1
+        n -= 1
+    return string
+
+
+def find_letter(root, code_string):
+    count = 0
+    node = root
+    leftover = code_string
+    letter = ''
+    for num in code_string:
+        if node:
+            if num == '1':
+                node = node.right
+            elif num == '0':
+                node = node.left
+            if node:
+                if node.data[0]:
+                    letter += node.data[0]
+                    leftover = code_string[(count + 1):]
+                    node = root
+            count += 1
+    return leftover, letter
+
+
 def encoding_to_file(text, d):
     with open('output.uwu', 'wb') as output:
-        length = len(text)
+        length = get_length(output)
         byte = ''
         ext = 0
         count = 1
@@ -61,51 +98,25 @@ def encoding_to_file(text, d):
     return output, ext
 
 
-def convert_to_bin_str(i):
-    n = 8
-    string = ''
-    while n:
-        string = str(i & 0b00000001) + string
-        i = i >> 1
-        n -= 1
-    return string
-
-
 def decoding(node, ext):
     with open('output.uwu', 'rb') as output:
         with open('final.txt', 'w', encoding='utf8') as final:
-            output.seek(0, io.SEEK_END)
-            length = output.tell()
-            output.seek(0, io.SEEK_SET)
+            length = get_length(output)
             string = ''
-            orig_node = node
+            root = node
             for i in range(1, length+1):
                 byte = output.read(1)
                 byte = int.from_bytes(byte, "big")
                 string += convert_to_bin_str(byte)
                 if i == length:
                     string = string[:-ext]
-                count = 0
-                node = orig_node
-                leftover = string
-                for num in string:
-                    if num == '1':
-                        node = node.right
-                    elif num == '0':
-                        node = node.left
-                    if node.data[0]:
-                        final.write(node.data[0])
-                        node = orig_node
-                        leftover = string[(count+1):]
-
-                    count += 1
-                string = leftover
-
-
+                string, letter = find_letter(root, string)
+                if len(letter):
+                    final.write(letter)
 
 
 if __name__ == "__main__":
-    with open('boss.txt', 'r', encoding='utf-8') as file:
+    with open('text.txt', 'r', encoding='utf-8') as file:
         text = file.read()
 
     frequency = Counter(text).most_common()[::-1]
