@@ -69,7 +69,9 @@ def test_encode_to_stream():
     def encode_to_stream_wrapper(str, dict):
         stream = io.BytesIO()
         encode_to_stream(str, dict, stream)
-        return stream.getbuffer()
+        buffer = stream.getbuffer()
+        stream.close()
+        return buffer
 
     assert encode_to_stream_wrapper("abcc", dict) == b'\xa0'
     assert encode_to_stream_wrapper("aaabcc", dict) == b'\xe8'
@@ -88,6 +90,9 @@ def test_decoding_stream():
         decoded_stream = io.StringIO()
         encoded_stream = io.BytesIO(encoded_bytes)
         decoding_stream(root, ext, encoded_stream, decoded_stream)
-        return decoded_stream.getvalue()
+        value = decoded_stream.getvalue()
+        decoded_stream.close()
+        encoded_stream.close()
+        return value
 
     assert decoding_stream_wrapper(1, b'\xa0') == 'abcc'
