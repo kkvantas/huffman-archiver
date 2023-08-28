@@ -13,6 +13,8 @@ class Node:
 
 
 def build_tree(nodes):
+    if not len(nodes):
+        raise ValueError('Passing an empty nodes list is not supported')
     nodes = sorted(nodes, key=lambda x: x.data[1])
     while len(nodes) > 1:
         nodes.append(Node((None, nodes[0].data[1] + nodes[1].data[1]), nodes[0], nodes[1]))
@@ -46,10 +48,10 @@ def huffman_code_tree_stack(root):
     return d
 
 
-def get_length(file):
-    file.seek(0, io.SEEK_END)
-    length = file.tell()
-    file.seek(0, io.SEEK_SET)
+def get_length(stream):
+    stream.seek(0, io.SEEK_END)
+    length = stream.tell()
+    stream.seek(0, io.SEEK_SET)
     return length
 
 
@@ -87,44 +89,52 @@ def decode_code_string(root, code_string):
 
 def encoding_to_file(text, d):
     with open('output.uwu', 'wb') as output:
-        length = get_length(output)
-        byte = ''
-        ext = 0
-        count = 1
-        for i in text:
-            if len(byte + d[i]) < 8:
-                byte = byte + d[i]
-                if count == length:
-                    ext = 8 - len(byte)
-                    byte = byte + ext * '0'
-                    output.write(int(byte, 2).to_bytes(1, byteorder='big'))
-            elif len(byte + d[i]) > 8:
-                tail = (byte + d[i])[8:]
-                byte = (byte + d[i])[:8]
+        return encode_to_stream(text, d, output)
+
+
+def encode_to_stream(text, d, output):
+    length = len(text)
+    byte = ''
+    ext = 0
+    count = 1
+    for i in text:
+        if len(byte + d[i]) < 8:
+            byte = byte + d[i]
+            if count == length:
+                ext = 8 - len(byte)
+                byte = byte + ext * '0'
                 output.write(int(byte, 2).to_bytes(1, byteorder='big'))
-                byte = tail
-            elif len(byte + d[i]) == 8:
-                byte = byte + d[i]
-                output.write(int(byte, 2).to_bytes(1, byteorder='big'))
-                byte = ''
-            count += 1
-    return output, ext
+        elif len(byte + d[i]) > 8:
+            tail = (byte + d[i])[8:]
+            byte = (byte + d[i])[:8]
+            output.write(int(byte, 2).to_bytes(1, byteorder='big'))
+            byte = tail
+        elif len(byte + d[i]) == 8:
+            byte = byte + d[i]
+            output.write(int(byte, 2).to_bytes(1, byteorder='big'))
+            byte = ''
+        count += 1
+    return ext
 
 
 def decoding(root, ext):
     with open('output.uwu', 'rb') as output:
         with open('final.txt', 'w', encoding='utf8') as final:
-            length = get_length(output)
-            string = ''
-            for i in range(1, length+1):
-                byte = output.read(1)
-                byte = int.from_bytes(byte, "big")
-                string += convert_to_bin_str(byte)
-                if i == length:
-                    string = string[:-ext]
-                string, letters = decode_code_string(root, string)
-                if len(letters):
-                    final.write(letters)
+            return decoding_stream(root, ext, output, final)
+
+
+def decoding_stream(root, ext, output, final):
+    length = get_length(output)
+    string = ''
+    for i in range(1, length+1):
+        byte = output.read(1)
+        byte = int.from_bytes(byte, "big")
+        string += convert_to_bin_str(byte)
+        if i == length:
+            string = string[:-ext]
+        string, letters = decode_code_string(root, string)
+        if len(letters):
+            final.write(letters)
 
 
 if __name__ == "__main__":
@@ -144,12 +154,12 @@ if __name__ == "__main__":
 
     print(dict_with_code)
 
-    output, ext = encoding_to_file(text, dict_with_code)
+    ext = encoding_to_file(text, dict_with_code)
 
     decoding(root, ext)
 
 
-
+# TODO: processing empty files
 
 
 
