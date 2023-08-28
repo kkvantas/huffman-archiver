@@ -118,23 +118,23 @@ def encode_to_stream(text, d, output):
 
 
 def decoding(root, ext):
-    with open('output.uwu', 'rb') as output:
-        with open('final.txt', 'w', encoding='utf8') as final:
-            return decoding_stream(root, ext, output, final)
+    with open('output.uwu', 'rb') as encoded_file:
+        with open('final.txt', 'w', encoding='utf8') as output_file:
+            return decoding_stream(root, ext, encoded_file, output_file)
 
 
-def decoding_stream(root, ext, output, final):
-    length = get_length(output)
+def decoding_stream(root, ext, encoded_stream, decoded_stream):
+    length = get_length(encoded_stream)
     string = ''
     for i in range(1, length+1):
-        byte = output.read(1)
+        byte = encoded_stream.read(1)
         byte = int.from_bytes(byte, "big")
         string += convert_to_bin_str(byte)
         if i == length:
             string = string[:-ext]
         string, letters = decode_code_string(root, string)
         if len(letters):
-            final.write(letters)
+            decoded_stream.write(letters)
 
 
 if __name__ == "__main__":

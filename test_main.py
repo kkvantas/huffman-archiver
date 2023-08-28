@@ -69,8 +69,7 @@ def test_encode_to_stream():
     def encode_to_stream_wrapper(str, dict):
         stream = io.BytesIO()
         encode_to_stream(str, dict, stream)
-        stream.seek(0)
-        return stream.read()
+        return stream.getbuffer()
 
     assert encode_to_stream_wrapper("abcc", dict) == b'\xa0'
     assert encode_to_stream_wrapper("aaabcc", dict) == b'\xe8'
@@ -85,10 +84,10 @@ def test_decoding_stream():
     root = build_tree(lst)
     dict = huffman_code_tree_stack(root)
 
-    def decoding_stream_wrapper(ext, string):
-        stream = io.BytesIO()
-        decoding_stream(root, ext, string, stream)
-        stream.seek(0)
-        return stream.read()
+    def decoding_stream_wrapper(ext, encoded_bytes):
+        decoded_stream = io.StringIO()
+        encoded_stream = io.BytesIO(encoded_bytes)
+        decoding_stream(root, ext, encoded_stream, decoded_stream)
+        return decoded_stream.getvalue()
 
-    assert decoding_stream_wrapper(3, '10100000') == 'abc'
+    assert decoding_stream_wrapper(1, b'\xa0') == 'abcc'
