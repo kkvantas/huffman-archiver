@@ -1,6 +1,17 @@
 from collections import Counter
 import io
+import argparse
 
+
+def get_instructions():
+    action = {'encode': encode_to_file,  # here will be a whole cycle of encoding functions, not one func
+              'decode': decode_from_file,  # here will be a whole cycle of decoding functions, not one func
+              }
+    parser = argparse.ArgumentParser(description='Choose action and file name')
+    parser.add_argument('action', type=str, help='Choose encode or decode pls', choices=list(action.keys()))
+    parser.add_argument('name', type=str, help='Write name of file')
+    args = parser.parse_args()
+    return action[args.action](args.name)
 
 class Node:
     def __init__(self, data, left=None, right=None):
@@ -87,7 +98,7 @@ def decode_code_string(root, code_string):
     return leftover, letters
 
 
-def encoding_to_file(text, d):
+def encode_to_file(text, d):
     with open('output.uwu', 'wb') as output:
         return encode_to_stream(text, d, output)
 
@@ -117,13 +128,13 @@ def encode_to_stream(text, d, output):
     return ext
 
 
-def decoding(root, ext):
+def decode_from_file(root, ext):
     with open('output.uwu', 'rb') as encoded_file:
         with open('final.txt', 'w', encoding='utf8') as output_file:
-            return decoding_stream(root, ext, encoded_file, output_file)
+            return decode_from_stream(root, ext, encoded_file, output_file)
 
 
-def decoding_stream(root, ext, encoded_stream, decoded_stream):
+def decode_from_stream(root, ext, encoded_stream, decoded_stream):
     length = get_length(encoded_stream)
     string = ''
     for i in range(1, length+1):
@@ -154,9 +165,9 @@ if __name__ == "__main__":
 
     print(dict_with_code)
 
-    ext = encoding_to_file(text, dict_with_code)
+    ext = encode_to_file(text, dict_with_code)
 
-    decoding(root, ext)
+    decode_from_file(root, ext)
 
 
 # TODO: processing empty files

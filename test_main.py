@@ -7,7 +7,7 @@ from main import (
     build_tree,
     decode_code_string,
     encode_to_stream,
-    decoding_stream
+    decode_from_stream
 )
 import pytest
 
@@ -89,7 +89,7 @@ def test_decoding_stream():
     def decoding_stream_wrapper(ext, encoded_bytes):
         decoded_stream = io.StringIO()
         encoded_stream = io.BytesIO(encoded_bytes)
-        decoding_stream(root, ext, encoded_stream, decoded_stream)
+        decode_from_stream(root, ext, encoded_stream, decoded_stream)
         value = decoded_stream.getvalue()
         decoded_stream.close()
         encoded_stream.close()
