@@ -18,16 +18,16 @@ def get_instructions():
 
 
 class Node:
-    """ Class of a node of a binary tree.
-    """
-    def __init__(self, data, left=None, right=None):
-        """ Assigns values to object properties
+    """ Class of a node of a binary tree
         :param data: Letter and number
         :type data: tuple
-        :param left: Link to left child node
-        :type left: Node class obj
-        :param right: Link to right child node
-        :type right: Node class obj
+        :param left: Reference to left child node
+        :type left: class:`Node`
+        :param right: Reference to right child node
+        :type right: class:`Node`
+    """
+    def __init__(self, data, left=None, right=None):
+        """ Constructor method
         """
         self.left = left
         self.right = right
@@ -35,29 +35,31 @@ class Node:
 
     def children(self):
         """
-        :return: Link to left and right child nodes
+        Returns tuple of reference to :class:`Node` objects of left and right children nodes
+        :return: Reference to left and right children nodes
+        :rtype tuple
         """
         return self.left, self.right
 
 
 def read_text(name):
-    """ Open and read file name
-    :param name: Name of file
+    """ Opens and reads the file name
+    :param name: Name of the file
     :type name: str
-    :return: Read file data
+    :return: Read the file data
     """
     with open(f'{name}', 'r', encoding='utf-8') as file:
         return file.read()
 
 
 def save_list(list_of_freq, ext, name):
-    """Saves list of frequencies to file named as f_name in a current directory.
+    """Saves a list of frequencies to a file named as f_name in the current directory.
     Uses `\n` as separator
-    :param list_of_freq: A list of tuples where 1st value - letter, 2nd - frequency
-    :type list_of_freq: list or str
-    :param name: Name of file
+    :param list_of_freq: A list of strings where 1st value is a letter, 2nd is a frequency
+    :type list_of_freq: list
+    :param name: Name of the file
     :type name: str
-    :param ext: Number of '0' which was added to finish final byte
+    :param ext: The number of '0's added to complete the final byte
     :type ext: str
     """
     with open(f'f_{name}', 'a') as f_text:
@@ -68,10 +70,11 @@ def save_list(list_of_freq, ext, name):
 
 
 def load_list(name):
-    """ Read and parce file name to list of tuples
-    :param name: File name
+    """ Reads a file and parses it into a list of tuples
+    :param name: Name of the file
     :type name: str
-    :return: list of tuples with frequencies AND INT EXTENSION
+    :return: List of tuples with frequencies AND EXTENSION
+    :rtype: list, int
     """
     with open(f'f_{name}', 'r') as f_text:
         frequency = f_text.read()
@@ -90,19 +93,21 @@ def load_list(name):
 
 
 def calculate_frequency(text):
-    """ Takes text and count frequencies.
-    :param text: Transferred text
+    """ Takes the text and counts the frequencies
+    :param text: read text
     :type text: text I/O
-    :return: List of tuples where 1st - letter, 2nd - int frequency
+    :return: List of tuples where 1st is a letter, 2nd is a frequency
+    :rtype: list
     """
     return Counter(text).most_common()[::-1]
 
 
 def build_tree(frequency):
-    """ Takes frequencies and makes objs of Node class, then builds l-r tree
+    """ Takes frequencies and creates :class:Node objects, then constructs a binary tree
     :param frequency: Tuples where 1st - letter, 2nd - int frequency
     :type frequency: list
     :return: Root of tree
+    :rtype: :class:`Node` object
     """
     if not len(frequency):
         return Node((None, 0))
@@ -128,10 +133,11 @@ def huffman_code_tree_recursive(n, d, st=''):
 
 
 def huffman_code_tree_stack(root):
-    """ Writes in dict codes of letters via stack
+    """ Writes in dict codes of letters using a stack
     :param root: Root of huffman tree
-    :type root: Node class obj
-    :return: dict where key - letter and code - value
+    :type root: :class:`Node` object
+    :return: A dictionary where key - letter and code - value
+    :rtype: dict
     """
     stack = [(root, '')]
     d = dict()
@@ -149,10 +155,10 @@ def huffman_code_tree_stack(root):
 
 
 def get_length(stream):
-    """
-    Gets length of stream
+    """ Retrieves the length of the stream
     :param stream: Various types of I/O
-    :return: Length in int
+    :return: Length of the stream
+    :rtype: int
     """
     stream.seek(0, io.SEEK_END)
     length = stream.tell()
@@ -161,10 +167,11 @@ def get_length(stream):
 
 
 def convert_to_bin_str(i):
-    """ Convert int to binary string
-    :param i: coded oct number
+    """ Convert int number to binary string
+    :param i: Encoded octal number
     :type i: int
-    :return: binary string, but type just STR!!
+    :return: Binary string
+    :rtype: str
     """
     if i not in range(0, 256):
         raise ValueError
@@ -180,10 +187,11 @@ def convert_to_bin_str(i):
 def decode_code_string(root, code_string):
     """ Decode binary string to letters via huffman tree
     :param root: Root of the tree
-    :type root: Node class obj
+    :type root: :class:`Node` object
     :param code_string: String of bin code
     :type code_string: str
-    :return: leftover(a piece of last coded letter, which tail is in next string), decoded letters
+    :return: leftover(a portion of the last encoded letter, with its tail in the next string), decoded letters
+    :rtype: str, str
     """
     count = 0
     node = root
@@ -205,11 +213,11 @@ def decode_code_string(root, code_string):
 
 
 def encode_to_file(name):
-    """ Gets encoding text, dict of letters and codes, uwu file for encoding
+    """ Receives the text to encode, a dictionary
+    of letters and their corresponding codes, and an output file for encoding
     :param name: Name of encoded file
     :type name: str
-    :return: Calls function encode_to_stream with args: encoding text, dict of letters and codes,
-    uwu file for encoding, name of encoding file
+    :return: Calls function encode_to_stream
     """
     text = read_text(name)
     frequency = calculate_frequency(text)
@@ -226,8 +234,9 @@ def encode_to_stream(text, d, output):
     :type text: io text
     :param d: Dict with letters and codes
     :type d: dict
-    :param output: Special uwu file for encoding, WB
-    :return: Extension (number of '0' which was added to finish final byte)
+    :param output: Special uwu file for encoding
+    :return: Extension (The number of 0's added to complete the final byte)
+    :rtype: str
     """
     length = len(text)
     byte = ''
@@ -254,30 +263,29 @@ def encode_to_stream(text, d, output):
 
 
 def decode_from_file(name):
-    """ Gets a list of frequency, ext(int of zeros amounts in last byte), root,
-     opens encoded file(RB) and file in which decode(W+)
+    """ Gets a list of frequencies, ext(the number of 0's added to complete the final byte), root,
+     opens the encoded file and the file to which decoding will be performed
     :param name: Name of file to decode
     :type name: str
-    :return: Calls function decode_from_stream with args: root of huffman tree, int extension,
-    encoded file and file to decode.
+    :return: Calls function decode_from_stream
     """
     frequency, ext = load_list(name)
     root = build_tree(frequency)
     with open(f'{name}.uwu', 'rb') as encoded_file:
         with open(f'decoded_{name}', 'w+', encoding='utf8') as output_file:
-            return decode_from_stream(root, ext, encoded_file, output_file)
+            decode_from_stream(root, ext, encoded_file, output_file)
 
 
 def decode_from_stream(root, ext, encoded_stream, decoded_stream):
     """ Decode encoded file
     :param root: root of huffman tree
-    :type root: Node class obj
-    :param ext: zeros amounts of zeros in last byte
+    :type root: :class:`Node` object
+    :param ext: The number of 0's added to complete the final byte
     :type ext: int
-    :param encoded_stream: encoded uwu file(RB)
-    :param decoded_stream: file in which decode(W+)
+    :param encoded_stream: encoded uwu file
+    :type encoded_stream: io binary
+    :param decoded_stream: file in which decode
     :type decoded_stream: io text
-    :return: Nothing. Writes decoded file.
     """
     length = get_length(encoded_stream)
     string = ''
@@ -294,4 +302,3 @@ def decode_from_stream(root, ext, encoded_stream, decoded_stream):
 
 if __name__ == "__main__":
     get_instructions()
-
